@@ -7,7 +7,6 @@ describe("Suite testing", () => {
         const accounts = await ethers.getSigners();
         const accountTeam = accounts[0];
         const accountUserA = accounts[1];
-        const accountUserB = accounts[2];
 
         // contracts instances
         let c = {
@@ -20,7 +19,7 @@ describe("Suite testing", () => {
         c.ETHPool = await ETHPool.deploy();
         await c.ETHPool.deployed();
 
-        return {c, accountTeam, accountUserA, accountUserB}
+        return {c, accountTeam, accountUserA}
     }
 
     it("Unit OK: Users can deposit 100 Wei", async function() {
@@ -55,11 +54,11 @@ describe("Suite testing", () => {
         expect(await c.ETHPool.userDepositsBalance()).to.equal(expectedAfterAmount);
     });
 
-    it("Unit KO: User A tries to deposit 0 Wei", async function() {
+    it("Unit KO: User tries to deposit 0 Wei", async function() {
         const depositAmount = 0;
-        const {c, accountUserB} = await loadFixture(deploymentFixture);
-        await expect(c.ETHPool.connect(accountUserB).deposit({
-            from: accountUserB.address,
+        const {c, accountUserA} = await loadFixture(deploymentFixture);
+        await expect(c.ETHPool.connect(accountUserA).deposit({
+            from: accountUserA.address,
             value: depositAmount // wei
         })).to.be.revertedWith('You cannot send empty value.')
     });
