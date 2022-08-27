@@ -29,8 +29,8 @@ Design and code a contract for ETHPool, take all the assumptions you need to mov
 
 <hr/>
 
-### Live contracts
-- Goerli Etherscan: 
+### Deployed and verified contract
+- Goerli Etherscan: https://goerli.etherscan.io/address/0x4E1716dc1Ea835b1F7f0565c7d8D3E49E4d638F5
 
 <hr/>
 
