@@ -91,6 +91,7 @@ contract ETHPool is Ownable {
     // OWNER
 
     function depositRewards() public payable onlyOwner {
+        require(msg.value > 0, "You cannot send empty value.");
         teamDepositsBalance = teamDepositsBalance + msg.value; // incrementing teamDepositsBalance variable
 
         teamDeposits.push(

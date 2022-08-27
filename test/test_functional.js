@@ -23,34 +23,52 @@ describe("Suite testing", () => {
         return {c, accountTeam, accountUserA, accountUserB}
     }
 
-    it("User A can deposit 500 Wei", async function() {
-        const depositAmount = 500;
-        const {c, accountUserA} = await loadFixture(deploymentFixture);
+    it("A and B can withdraw their deposits + rewards as they both deposited before", async function() {
+        const userADepositAmount = 100
+        const userBDepositAmount = 300
+        const teamDepositRewardsAmount = 200
+        const expectedBeforeAmountA = 150;
+        const expectedBeforeAmountB = 450;
+        const expectedAfterAmount = 0;
+        const {c, accountUserA, accountUserB, accountTeam} = await loadFixture(deploymentFixture);
+
+        // userA deposits
         await c.ETHPool.connect(accountUserA).deposit({
             from: accountUserA.address,
-            value: depositAmount // wei
+            value: userADepositAmount // wei
         })
-        expect(await c.ETHPool.getPoolBalance()).to.equal(depositAmount);
-    });
 
-    it("Team can depositRewards 500 Wei", async function() {
-        const depositAmount = 500;
-        const {c, accountTeam} = await loadFixture(deploymentFixture);
-        await c.ETHPool.connect(accountTeam).depositRewards({
-            from: accountTeam.address,
-            value: depositAmount // wei
-        })
-        expect(await c.ETHPool.getPoolBalance()).to.equal(depositAmount);
-    });
-
-    it("User B can deposit 500 Wei", async function() {
-        const depositAmount = 500;
-        const {c, accountUserB} = await loadFixture(deploymentFixture);
+        // userB deposits
         await c.ETHPool.connect(accountUserB).deposit({
             from: accountUserB.address,
-            value: depositAmount // wei
+            value: userBDepositAmount // wei
         })
-        expect(await c.ETHPool.getPoolBalance()).to.equal(depositAmount);
+
+        // team deposits
+        await c.ETHPool.connect(accountTeam).depositRewards({
+            from: accountTeam.address,
+            value: teamDepositRewardsAmount // wei
+        })
+
+        // check balance before withdraws
+        let beforeA = Number(await c.ETHPool.getUserBalance(accountUserA.address)) + Number(await c.ETHPool.getUserRewardsAmount(accountUserA.address))
+        expect(beforeA).to.equal(expectedBeforeAmountA);
+        let beforeB = Number(await c.ETHPool.getUserBalance(accountUserB.address)) + Number(await c.ETHPool.getUserRewardsAmount(accountUserB.address))
+        expect(beforeB).to.equal(expectedBeforeAmountB);
+        expect(beforeA + beforeB).to.equal(await c.ETHPool.getPoolBalance());
+
+        await c.ETHPool.connect(accountUserA).withdraw({
+            from: accountUserA.address
+        })
+        await c.ETHPool.connect(accountUserB).withdraw({
+            from: accountUserB.address
+        })
+
+        let afterA = Number(await c.ETHPool.getUserBalance(accountUserA.address)) + Number(await c.ETHPool.getUserRewardsAmount(accountUserA.address))
+        expect(afterA).to.equal(expectedAfterAmount);
+        let afterB = Number(await c.ETHPool.getUserBalance(accountUserB.address)) + Number(await c.ETHPool.getUserRewardsAmount(accountUserB.address))
+        expect(afterB).to.equal(expectedAfterAmount);
+        expect(afterA + afterB).to.equal(expectedAfterAmount);
     });
 
     it("A deposits, T deposits, B deposits, A withdraws + rewards, B withdraw without rewards", async function() {
